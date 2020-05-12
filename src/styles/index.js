@@ -2,10 +2,10 @@ import {StyleSheet, Dimensions} from 'react-native';
 
 var width = Dimensions.get('window').width;
 var height = Dimensions.get('window').height;
-var primColor = '#F5F5F5' //COR DO FUNDO
-var secColor = '#fff'     //COR DO FUNDO DOS BOTOES MENORES  
+var primColor = '#F5F5F5' 
+var secColor = '#fff'     
 var thirdColor = '#3A38EF' 
-var forthColor = '#fdb903'
+var radius = 20
 
 const styles = StyleSheet.create({
     container: {
@@ -30,9 +30,9 @@ const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
         width: width,
-        position: 'relative',
+        position: 'absolute',
         resizeMode: 'contain',
-        top: 100
+        top: -90
     },
     textButtonReading: {
         color: 'black',       
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
         height: 100,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 10,
+        borderRadius: radius,
         marginTop: 30,
         marginBottom: 30
     },
@@ -65,23 +65,33 @@ const styles = StyleSheet.create({
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 10,
+        borderRadius: radius,
         marginTop: 30,
         marginBottom: 30
     },
     lastReading: {
         backgroundColor: secColor,
-        borderRadius: 20,
+        borderRadius: radius,
         width: width-50,
         height: height/8,
         marginTop: 100
     },
     listReading: {
         backgroundColor: secColor,
-        borderRadius: 20,
+        borderRadius: radius,
         width: width-50,
         height: height/4
-    }
+    },    
+    barPlot: {
+        width: width-50,
+        alignItems: 'center',
+    },  
+    listPlot: {
+        width: width-20,
+        height: height/2
+    },
+    headTable: { height: 40, backgroundColor: '#f1f8ff' },
+    textTable: { margin: 6 }
   });
 
 export default styles;
