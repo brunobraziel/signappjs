@@ -34,9 +34,16 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
         top: -90
     },
-    textButtonReading: {
-        color: 'black',       
+    textMidButton: {
+        color: 'black',
+        marginLeft: 20,     
         fontSize: 15
+    },
+    iconMidButton: {
+        color: thirdColor,
+        opacity: 30,
+        marginLeft: 20,
+        marginBottom: 5
     },
     textButtonRead: {
         color: secColor,       
@@ -47,13 +54,12 @@ const styles = StyleSheet.create({
         width: width-50,
         justifyContent: 'space-around'
     },
-    readingButton: {
+    midButton: {
         backgroundColor: secColor,
         fontWeight: 'bold',
         width: (width-80)/2,
         height: 100,
         justifyContent: 'center',
-        alignItems: 'center',
         borderRadius: radius,
         marginTop: 30,
         marginBottom: 30
@@ -83,15 +89,30 @@ const styles = StyleSheet.create({
         height: height/4
     },    
     barPlot: {
-        width: width-50,
-        alignItems: 'center',
+        width: width,
+        alignItems: 'center'
     },  
     listPlot: {
         width: width-20,
         height: height/2
     },
     headTable: { height: 40, backgroundColor: '#f1f8ff' },
-    textTable: { margin: 6 }
+    textTable: { margin: 6 },
+    textBox: {
+        marginLeft: 20,
+        marginTop: 5
+    },
+    divider: {
+        backgroundColor: 'black',
+        opacity: 80,
+        marginLeft: 20,
+        marginRight: 20
+    },
+    textData: {
+        marginLeft: 20,
+        marginTop: 20,
+        fontSize: 30
+    },
   });
 
 export default styles;

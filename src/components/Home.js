@@ -1,13 +1,42 @@
 import React, { Component } from 'react';
-import { Text, View, Image, StatusBar, TouchableOpacity } from 'react-native';
+import { Text, View, StatusBar, TouchableOpacity, ToastAndroid } from 'react-native';
+import { Divider } from 'react-native-elements';
 import styles from '../styles/index';
 import FilePickerManager from 'react-native-file-picker';
+import * as Animatable from 'react-native-animatable';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faUpload, faCog } from '@fortawesome/free-solid-svg-icons';
+import {
+    parseISO,
+    format, parse
+} from 'date-fns';
+import pt from 'date-fns/locale/pt-BR';
 
 export default class Home extends Component {
     state = {
         titulo: "E ai negah",
         outro: "Tutupao"
     }
+        
+    readDate = parseISO('2020-05-14 21:26:54');
+
+    lastReadingDate = format(
+        new Date(), //AQUI VAMOS PASSAR O ULTIMO DIA
+        "dd 'de' MMMM' às 'HH'h'mm",
+        {locale: pt}
+    );
+
+
+    buttonView = ref => this.view = ref;
+    fadeOut = () => this.view.slideOutDown(800).then(endState =>
+        this.props.navigation.navigate('Welcome',
+            {
+                'titulo': this.state.titulo,
+                'outro': this.state.outro
+            },
+            this.view.slideInUp(1)
+        ));
+
 
     uploadFile() {
         FilePickerManager.showFilePicker(null, (response) => {
@@ -18,10 +47,9 @@ export default class Home extends Component {
             else if (response.error) {
                 console.log('FilePickerManager Error: ', response.error);
             }
-            else {
+            else if (response.path.includes("SIGNAPP")) {
                 this.setState({
                     file: response
-
                 });
                 this.props.navigation.navigate('Plot Existing Chart',
                     {
@@ -29,11 +57,14 @@ export default class Home extends Component {
                     }
                 )
             }
+            else {
+                console.log('Not an SIGNAPP.csv file');
+                ToastAndroid.show("Arquivo inválido. Por favor, adicione um arquivo do tipo SIGNAPP.csv", ToastAndroid.SHORT);
+            }
         });
     }
 
     render() {
-
         return (
             <View style={styles.container}>
                 <StatusBar
@@ -41,27 +72,55 @@ export default class Home extends Component {
                     backgroundColor={'transparent'}
                     barStyle={'dark-content'} />
 
-                <Image style={styles.logoImage}
+                <Animatable.Image
+                    animation="slideInDown"
+                    duration={1500}
+                    style={styles.logoImage
+                    }
                     source={require('../assets/logo.png')}
                 />
 
-                <Image style={styles.backgroundImage}
+                <Animatable.Image
+                    animation="fadeInLeftBig"
+                    duration={2500}
+                    style={styles.backgroundImage
+                    }
                     source={require('../assets/backImage.png')}
                 />
 
-                <View style={styles.lastReading} />
+                <Animatable.View
+                    animation="fadeIn"
+                    duration={1500}
+                    delay={2500}
+                    style={styles.lastReading}
+                >
+                    <Text style={styles.textBox}>Sua última leitura foi feita em</Text>
+                    <Divider style={styles.divider} />
+                    <Text style={styles.textData}>{this.lastReadingDate}</Text>
 
-                <View style={styles.groupButtons}>
+                </Animatable.View>
+
+                <Animatable.View
+                    animation="fadeIn"
+                    duration={1500}
+                    delay={3000}
+                    style={styles.groupButtons}
+                >
                     <TouchableOpacity
-                        style={styles.readingButton}
+                        style={styles.midButton}
                         onPress={() => {
                             this.uploadFile();
                         }}>
-                        <Text style={styles.textButtonReading}>Importar{"\n"}Leituras</Text>
+                        <FontAwesomeIcon
+                            style={styles.iconMidButton}
+                            icon={faUpload}
+                            size={25}
+                        />
+                        <Text style={styles.textMidButton}>Importar{"\n"}Leitura</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={styles.readingButton}
+                        style={styles.midButton}
                         onPress={() => {
                             this.props.navigation.navigate('Welcome',
                                 {
@@ -70,26 +129,39 @@ export default class Home extends Component {
                                 }
                             )
                         }}>
-                        <Text style={styles.textButtonReading}>Configurações{"\n"}de Conexão</Text>
+                        <FontAwesomeIcon
+                            style={styles.iconMidButton}
+                            icon={faCog}
+                            size={25}
+                        />
+                        <Text style={styles.textMidButton}>Configurações{"\n"}de Conexão</Text>
                     </TouchableOpacity>
-                </View>
+                </Animatable.View>
 
-                <View style={styles.listReading} />
+                <Animatable.View
+
+                    animation="fadeIn"
+                    duration={1500}
+                    delay={3500}
+                    style={styles.listReading}
+                />
 
 
-                <TouchableOpacity
-                    style={styles.readButton}
-                    onPress={() => {
-                        this.props.navigation.navigate('Welcome',
-                            {
-                                'titulo': this.state.titulo,
-                                'outro': this.state.outro
-                            }
-                        )
-                    }}>
-                    <Text style={styles.textButtonRead}>Nova Leitura</Text>
-                </TouchableOpacity>
+                <Animatable.View
+                    ref={this.buttonView}
+                    animation="slideInUp"
+                    duration={1500}
+                    delay={1500}
+                >
+                    <TouchableOpacity
+                        style={styles.readButton}
+                        onPress={
+                            this.fadeOut
 
+                        }>
+                        <Text style={styles.textButtonRead}>Nova Leitura</Text>
+                    </TouchableOpacity>
+                </Animatable.View>
 
             </View>
 

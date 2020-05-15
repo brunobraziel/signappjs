@@ -5,6 +5,7 @@ import styles from '../styles/index';
 import { Table, Row, Rows } from 'react-native-table-component';
 import * as RNFS from 'react-native-fs';
 import Papa from 'papaparse';
+import * as Animatable from 'react-native-animatable';
 
 const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
     const [tableData, setTableData] = useState([])
@@ -18,7 +19,7 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
 
     const screenWidth = Dimensions.get("window").width;
     const screenHeight = Dimensions.get("window").height;
-    const tableHead = ['Frequência', 'Tempo'];
+    const tableHead = ['Tempo (s)', 'Frequencia (Hz)'];
 
 
     const chartConfig = {
@@ -38,25 +39,46 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
         }
     }
 
+    function fixXLabel(times) {
+        let i = 0;
+        xlabel = [];
+        xlabel.push(times[0])
+        for (i = 0; i < times.length; i++) {
+            if (times[i] == times[parseInt((1 * times.length) / 5)]) {
+                xlabel.push(times[i])
+            } else if (times[i] == times[parseInt((2 * times.length) / 5)]) {
+                xlabel.push(times[i])
+            } else if (times[i] == times[parseInt((3 * times.length) / 5)]) {
+                xlabel.push(times[i])
+            } else if (times[i] == times[parseInt((4 * times.length) / 5)]) {
+                xlabel.push(times[i])
+            }
+            else {
+                xlabel.push([''])
+            }
+        }
+        xlabel.push(times[parseInt(times.length) - 1])
+        return xlabel
+    }
+
     const uploadFile = (path) => {
         const times = []
         const freqs = []
 
         try {
-            console.log('ah edmar')
             RNFS.readFile(path).then((data) => {
                 Papa.parse(data, {
                     dynamicTyping: true,
                     complete: results => {
                         setTableData(results.data)
                         for (let data of results.data) {
-                            freqs.push(data[0])
-                            times.push(data[1])
+                            times.push(parseInt(data[0]))
+                            freqs.push(parseInt(data[1]))
                         }
                         setFreqs(freqs)
                         setTimes(times)
                         setChartPlot({
-                            labels: times,
+                            labels: times.length < 15 ? times : fixXLabel(times),
                             datasets: [
                                 {
                                     data: freqs
@@ -67,13 +89,17 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
                 });
             });
         } catch (err) {
-            console.log('caiu no catch')
+            console.log('catch')
         }
     }
 
     return (
         <View style={styles.container}>
-            <View style={styles.barPlot}>
+            <Animatable.View
+
+                animation="fadeIn"
+                duration={1500}
+                style={styles.barPlot}>
                 {chartPlot && <LineChart
                     data={chartPlot}
                     width={screenWidth - 20}
@@ -81,13 +107,17 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
                     chartConfig={chartConfig}
                     bezier
                     style={{
-                        marginVertical: 8,
+                        marginVertical: 10,
                         borderRadius: 16
                     }}
                 />}
-            </View>
+            </Animatable.View>
 
-            <View style={styles.listPlot}>
+            <Animatable.View
+                animation="fadeIn"
+                duration={1500}
+                delay={2500}
+                style={styles.listPlot}>
                 <Table borderStyle={{ borderWidth: .3 }}>
                     <Row data={tableHead} style={styles.headTable} textStyle={styles.textTable} />
                 </Table>
@@ -96,7 +126,7 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
                         <Rows data={tableData} textStyle={styles.textTable} />
                     </Table>
                 </ScrollView>
-            </View>
+            </Animatable.View>
 
             <TouchableOpacity
                 style={styles.readButton}
