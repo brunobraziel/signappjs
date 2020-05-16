@@ -62,6 +62,7 @@ export default class Home extends Component {
                 ToastAndroid.show("Arquivo inválido. Por favor, adicione um arquivo do tipo SIGNAPP.csv", ToastAndroid.SHORT);
             }
         });
+        this.view.fadeIn(800)
     }
 
     render() {
@@ -81,7 +82,7 @@ export default class Home extends Component {
                 />
 
                 <Animatable.Image
-                    animation="fadeInLeftBig"
+                    animation="fadeInRightBig"
                     duration={2500}
                     style={styles.backgroundImage
                     }
@@ -94,10 +95,20 @@ export default class Home extends Component {
                     delay={2500}
                     style={styles.lastReading}
                 >
+                      <TouchableOpacity
+                        onPress={() => {
+                            this.props.navigation.navigate('Welcome',
+                                {
+                                    'titulo': this.state.titulo,
+                                    'outro': this.state.outro
+                                }
+                            )
+                        }}>
                     <Text style={styles.textBox}>Sua última leitura foi feita em</Text>
                     <Divider style={styles.divider} />
                     <Text style={styles.textData}>{this.lastReadingDate}</Text>
 
+                    </TouchableOpacity>
                 </Animatable.View>
 
                 <Animatable.View
@@ -122,19 +133,14 @@ export default class Home extends Component {
                     <TouchableOpacity
                         style={styles.midButton}
                         onPress={() => {
-                            this.props.navigation.navigate('Welcome',
-                                {
-                                    'titulo': this.state.titulo,
-                                    'outro': this.state.outro
-                                }
-                            )
+                            this.props.navigation.navigate('Settings')
                         }}>
                         <FontAwesomeIcon
                             style={styles.iconMidButton}
                             icon={faCog}
                             size={25}
                         />
-                        <Text style={styles.textMidButton}>Configurações{"\n"}de Conexão</Text>
+                        <Text style={styles.textMidButton}>{"\n"}Configurações</Text>
                     </TouchableOpacity>
                 </Animatable.View>
 

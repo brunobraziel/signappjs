@@ -19,13 +19,14 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
 
     const screenWidth = Dimensions.get("window").width;
     const screenHeight = Dimensions.get("window").height;
-    const tableHead = ['Tempo (s)', 'Frequencia (Hz)'];
+    const tableHead = ['Tempo (s)', 'Frequência (Hz)'];
 
 
     const chartConfig = {
         backgroundColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         backgroundGradientFrom: '#fff',
         backgroundGradientTo: '#fff',
+        backgroundGradientFromOpacity: 0,
         decimalPlaces: 2, // optional, defaults to 2dp
         color: (opacity = 1) => `rgba(58, 56, 239, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
@@ -94,7 +95,7 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.secondaryContainer}>
             <Animatable.View
 
                 animation="fadeIn"
@@ -105,36 +106,44 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
                     width={screenWidth - 20}
                     height={screenHeight / 3}
                     chartConfig={chartConfig}
+                    withInnerLines={false}
                     bezier
                     style={{
                         marginVertical: 10,
-                        borderRadius: 16
+                        borderRadius: 16,
+                        marginTop: 50
                     }}
                 />}
             </Animatable.View>
-
             <Animatable.View
                 animation="fadeIn"
                 duration={1500}
-                delay={2500}
-                style={styles.listPlot}>
-                <Table borderStyle={{ borderWidth: .3 }}>
-                    <Row data={tableHead} style={styles.headTable} textStyle={styles.textTable} />
-                </Table>
-                <ScrollView>
+                delay={2500}>
+                <View
+                    style={styles.listPlot}>
                     <Table borderStyle={{ borderWidth: .3 }}>
-                        <Rows data={tableData} textStyle={styles.textTable} />
+                        <Row data={["Leitura realizada dia "]} style={styles.headTable} textStyle={styles.textHeadTable} />
                     </Table>
-                </ScrollView>
-            </Animatable.View>
+                    <Table borderStyle={{ borderWidth: .3 }}>
+                        <Row data={tableHead} style={styles.headTable} textStyle={styles.textHeadTable} />
+                    </Table>
+                    <ScrollView>
+                        <Table borderStyle={{ borderWidth: .3 }}>
+                            <Rows data={tableData} textStyle={styles.textTable} />
+                        </Table>
+                    </ScrollView>
+                </View>
 
-            <TouchableOpacity
-                style={styles.readButton}
-                onPress={() => {
-                    props.navigation.navigate('Welcome')
-                }}>
-                <Text style={styles.textButtonRead}>Nova Leitura</Text>
-            </TouchableOpacity>
+                <View>
+                    <TouchableOpacity
+                        style={styles.readButton}
+                        onPress={() => {
+                            props.navigation.navigate('Welcome')
+                        }}>
+                        <Text style={styles.textButtonRead}>Nova Leitura</Text>
+                    </TouchableOpacity>
+                </View>
+            </Animatable.View>
         </View>
     )
 }
