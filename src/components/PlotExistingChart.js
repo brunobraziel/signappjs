@@ -138,7 +138,7 @@ const PlotExistingChart = ({ route, navigateToHomeScreen }) => {
                     <TouchableOpacity
                         style={styles.readButton}
                         onPress={() => {
-                            props.navigation.navigate('Welcome')
+                            props.navigation.navigate('Plot Real Time')
                         }}>
                         <Text style={styles.textButtonRead}>Nova Leitura</Text>
                     </TouchableOpacity>

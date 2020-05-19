@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUpload, faCog } from '@fortawesome/free-solid-svg-icons';
 import {
     parseISO,
-    format, parse
+    format
 } from 'date-fns';
 import pt from 'date-fns/locale/pt-BR';
 
@@ -17,13 +17,13 @@ export default class Home extends Component {
         titulo: "E ai negah",
         outro: "Tutupao"
     }
-        
+
     readDate = parseISO('2020-05-14 21:26:54');
 
     lastReadingDate = format(
         new Date(), //AQUI VAMOS PASSAR O ULTIMO DIA
         "dd 'de' MMMM' às 'HH'h'mm",
-        {locale: pt}
+        { locale: pt }
     );
 
 
@@ -95,7 +95,7 @@ export default class Home extends Component {
                     delay={2500}
                     style={styles.lastReading}
                 >
-                      <TouchableOpacity
+                    <TouchableOpacity
                         onPress={() => {
                             this.props.navigation.navigate('Welcome',
                                 {
@@ -104,9 +104,9 @@ export default class Home extends Component {
                                 }
                             )
                         }}>
-                    <Text style={styles.textBox}>Sua última leitura foi feita em</Text>
-                    <Divider style={styles.divider} />
-                    <Text style={styles.textData}>{this.lastReadingDate}</Text>
+                        <Text style={styles.textBox}>Sua última leitura foi feita em</Text>
+                        <Divider style={styles.divider} />
+                        <Text style={styles.textData}>{this.lastReadingDate}</Text>
 
                     </TouchableOpacity>
                 </Animatable.View>
@@ -161,9 +161,10 @@ export default class Home extends Component {
                 >
                     <TouchableOpacity
                         style={styles.readButton}
-                        onPress={
+                        onPress={() => {
                             this.fadeOut
-
+                            this.props.navigation.navigate('Plot Real Time')
+                        }
                         }>
                         <Text style={styles.textButtonRead}>Nova Leitura</Text>
                     </TouchableOpacity>

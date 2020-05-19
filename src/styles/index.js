@@ -183,7 +183,34 @@ const styles = StyleSheet.create({
     },
     fillVoid: {
         height: height / 5
-    }
+    },
+    buttonPlot: {
+        backgroundColor: primColor,
+        borderRadius: 10,
+        width: 70,
+        height: 70,
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: 10
+    },
+    groupPlotButtons: {
+        flexDirection: 'row'
+    },
+    disabledPlot: {color: 'grey'},
+    enabledPlot: {color: 'black'},
+    groupButtonsAfterPlot: {
+        flexDirection: 'column'
+    },
+    buttonAfterPlot: {
+        backgroundColor: primColor,
+        borderRadius: 10,
+        width: width/1.6,
+        height: 70,
+        justifyContent: 'space-evenly',
+        flexDirection: 'row',
+        alignItems: 'center',
+        margin: 10
+    },
 });
 
 export default styles;

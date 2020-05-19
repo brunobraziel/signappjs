@@ -5,11 +5,11 @@ import {
     ToastAndroid,
     Modal,
     Switch,
-    TouchableOpacity
+    TouchableOpacity,
+    Linking
 } from 'react-native'
 import styles from '../styles/index'
 import { Divider } from 'react-native-elements';
-import RNPickerSelect from 'react-native-picker-select';
 import BluetoothSerial from 'react-native-bluetooth-serial-next';
 
 export default class Settings extends Component {
@@ -23,50 +23,29 @@ export default class Settings extends Component {
             devices: [],
             unpairedDevices: [],
             connected: false,
-            myText: "",
             connected: false,
             showModal: false,
             colorPlot: ""
         }
 
-        Promise.all([BluetoothSerial.isEnabled(), BluetoothSerial.list()]).then(
+        BluetoothSerial.on("error", err => {
+            console.log("error", err);
+        });
+
+    }
+
+    async getDevices() {
+        await Promise.all([BluetoothSerial.isEnabled(), BluetoothSerial.list()]).then(
             values => {
                 const [isEnabled, devices] = values;
                 console.log('devices', devices);
                 this.setState({ isEnabled, devices });
             }
         );
+    }
 
-        BluetoothSerial.on("bluetoothEnabled", () => {
-            console.log("Bluetooth enabled")
-            this.setState({
-                isEnabled: true
-            })
-        }
-        );
-
-        BluetoothSerial.on("bluetoothDisabled", () => {
-            console.log("Bluetooth disabled")
-            this.disconnect()
-            this.setState({
-                isEnabled: false
-            })
-        }
-        );
-
-        BluetoothSerial.on("error", err => {
-            console.log("error", err);
-        });
-
-        BluetoothSerial.on("connectionLost", () => {
-            if (this.state.device) {
-                this.connect(this.state.device)
-                    .then(res => { })
-                    .catch(err => {
-                        console.log("error", err);
-                    });
-            }
-        });
+    async componentDidMount() {
+        await this.enable()
     }
 
     //MÉTODOS PARA GERENCIAMENTO DE CONEXAO BLUETOOTH
@@ -76,29 +55,25 @@ export default class Settings extends Component {
         </View>)
     }
 
-    enable() {
+    async enable() {
         BluetoothSerial.enable()
             .then((res) => {
                 this.setState({ isEnabled: true })
             })
             .catch((err) => console.log(err.message))
 
+        await this.getDevices()
     }
 
-
-    disable() {
+    async disable() {
+        await this.disconnect()
         BluetoothSerial.disable()
             .then((res) => this.setState({ isEnabled: false }))
             .catch((err) => console.log(err.message))
     }
 
-
     toggleBluetooth(value) {
-        if (value === true) {
-            this.enable()
-        } else {
-            this.disable()
-        }
+        value ? this.enable() : this.disable()
     }
 
     discoverUnpaired() {
@@ -124,19 +99,9 @@ export default class Settings extends Component {
         }
     }
 
-    receiveData() {
-        BluetoothSerial.read((data, subscription) => {
-            console.log(data);
-            this.setState({ myText: data })
-
-            if (subscription) {
-                BluetoothSerial.removeSubscription(subscription);
-            }
-        }, '\n');
-    }
-
     connect(device) {
         this.setState({ connecting: true })
+        console.log({ device })
         BluetoothSerial.connect(device.id)
             .then((res) => {
                 ToastAndroid.showWithGravity(
@@ -146,15 +111,11 @@ export default class Settings extends Component {
                 );
                 console.log(`Connected to device ${device.name}`)
                 this.setState({ device, connected: true, connecting: false })
-                setInterval(() => {
-                    // this.receiveData()
-                }, 1000)
             })
             .catch((err) => console.log(err.message))
     }
 
-    disconnect() {
-        this.disable()
+    async disconnect() {
         BluetoothSerial.disconnect()
             .then(() => this.setState({ connected: false }))
             .catch((err) => console.log(err.message))
@@ -167,7 +128,6 @@ export default class Settings extends Component {
             this.disconnect()
         }
     }
-
 
     render() {
         return (
@@ -207,28 +167,22 @@ export default class Settings extends Component {
 
                 <View style={styles.settingItem}>
 
-                    <Text style={styles.settingTitle}>Cores</Text>
+                    <Text style={styles.settingTitle}>Atualizações</Text>
 
                     <Divider style={styles.divider} />
-                    <Text style={styles.textBox}>Altere a cor de plotagem do gráfico</Text>
+                    <Text style={styles.textBox}>Mantenha-se atualizado sobre as últimas releases</Text>
 
-                    <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 5 }}>
-                        <RNPickerSelect
-                            placeholder={
-                                {
-                                    label: 'Selecione uma cor'
-                                }
-                            }
-                            onValueChange={(value) => this.setState({ colorPlot: value })}
-                            items={[
-                                { label: "Padrão (azul)", value: "`rgba(58, 56, 239, 1)`" },
-                                { label: "Vermelho", value: "`rgba(255, 29, 25, 1)`" },
-                                { label: "Verde", value: "`rgba(25, 255, 29, 1)`" },
-                                { label: "Amarelo", value: "`rgba(251, 255, 25, 1)`" },
-                            ]}
-                        /> 
+                    <View style={styles.buttonViewDevices}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                Linking.openURL('https://github.com/brbraziel/signappjs').catch((err) => console.error('An error occurred', err));
+                            }}>
+                            <Divider style={{ marginBottom: 5 }} />
+                            <Text style={{ fontSize: 15 }}>Acessar o repositório no GitHub</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
+
 
                 <View style={styles.settingItem}>
 
@@ -266,15 +220,16 @@ export default class Settings extends Component {
                                         })
                                     }}>
                                     <View style={styles.modalDevicesInner}>
-                                    <Text style={{ fontSize: 20, marginBottom: 20 }}>Dispositivos pareados</Text>
-                                        <TouchableOpacity key={device.address} onPress={() => {
+                                        <Text style={{ fontSize: 20, marginBottom: 20 }}>Dispositivos pareados</Text>
+
+                                        <TouchableOpacity onPress={() => {
                                             this.connect(device)
                                             this.setState({
                                                 showModal: false
                                             })
                                         }
                                         }>
-                                            <Text>{device.name}</Text>
+                                            <Text style={{ margin: 10 }}>{device.name}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity>
@@ -282,12 +237,12 @@ export default class Settings extends Component {
                         )
                     })
                 }
-                <View  style={styles.fillVoid}></View>
-                 <View>
+                <View style={styles.fillVoid}></View>
+                <View>
                     <TouchableOpacity
                         style={styles.readButton}
                         onPress={() => {
-                            props.navigation.navigate('Welcome')
+                            this.props.navigation.navigate('Plot Real Time')
                         }}>
                         <Text style={styles.textButtonRead}>Nova Leitura</Text>
                     </TouchableOpacity>

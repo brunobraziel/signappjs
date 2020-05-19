@@ -5,11 +5,11 @@ import Welcome from './components/Welcome';
 import Home from './components/Home';
 import PlotExistingChart from './components/PlotExistingChart';
 import Settings from './components/Settings';
+import PlotRealTime from './components/PlotRealTime';
 
 export default class App extends Component {
   render() {
     const MainNav = createStackNavigator();
-    console.disableYellowBox = (true); //REMOVER PARA DEBUG
 
     return (
       <NavigationContainer>
@@ -19,6 +19,7 @@ export default class App extends Component {
           <MainNav.Screen name="Welcome" component={Welcome} />
           <MainNav.Screen name="Plot Existing Chart" component={PlotExistingChart} />
           <MainNav.Screen name="Settings" component={Settings} />
+          <MainNav.Screen name="Plot Real Time" component={PlotRealTime} />
         </MainNav.Navigator>
       </NavigationContainer>
     )
