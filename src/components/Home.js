@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+//PÁGINA INICIAL DO APLICATIVO
+import React, { useEffect } from 'react';
 import {
     Text,
     View,
@@ -22,30 +23,29 @@ import getRealm from '../services/realm';
 const Home = ({ navigation }) => {
 
     useEffect(() => {
-        loadReadings()
+        loadReadings() //TODA VEZ QUE A LISTA DE LEITURAS SER ALTERADA, SOFRERÁ ATUALIZAÇÃO
     }, [])
 
-    const { readings, setReadings } = useReadings()
-    const [lastReadingDate, setLastReadingDate] = useState("Não há nenhuma leitura")
+    const { readings, setReadings } = useReadings() //LISTA DE LEITURAS
 
-    async function loadReadings() {
+    //FUNÇÃO PARA ATUALIZAÇÃO DA LISTA
+    async function loadReadings() { 
         try {
             const realm = await getRealm();
             const data = realm.objects('Reading').sorted('id', true);
             setReadings(data)
             global.empty_list = readings.length == 0 ? true : false;
-
-            console.log('list: ', readings)
-            console.log('empty list: ', global.empty_list)
         } catch (e) {
             console.log(e)
         }
     }
 
+    //BOTÕES COM EFEITO DE ANIMAÇÃO
     const buttonView = ref => Home.view = ref;
     const fadeOut = () => Home.view.slideOutDown(800).then(endState => { console.log('Fade out') }
     );
 
+    //FUNÇÃO PARA CARREGAR O ARQUIVO .CSV EXISTENTE
     function uploadFile() {
         FilePickerManager.showFilePicker(null, (response) => {
 
@@ -70,6 +70,7 @@ const Home = ({ navigation }) => {
         Home.view.fadeIn(800)
     }
 
+    //FUNÇÃO PARA CERTIFICAR QUE O USUÁRIO JÁ SE CONECTOU AO DISPOSITIVO ANTES DE INICIAR A PLOTAGEM 
     function goToPlot() {
         if (global.connected) {
             navigation.navigate('Plot Real Time')

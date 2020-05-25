@@ -2,7 +2,6 @@ import {
     StyleSheet,
     Dimensions
 } from 'react-native';
-import styled from 'styled-components/native';
 
 var width = Dimensions.get('window').width;
 var height = Dimensions.get('window').height;

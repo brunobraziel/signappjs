@@ -1,2 +1,2 @@
-global.connected = false;
-global.empty_list = true;
+global.connected = false; //VARIÁVEL GLOBAL PRA SINALIZAR SE O USUARIO ESTÁ CONECTADO AO DISPOSITIVO
+global.empty_list = Boolean; //VARIÁVEL GLBOAL PARA SINALIZAR SE A LISTA ESTÁ VAZIA OU NÃO

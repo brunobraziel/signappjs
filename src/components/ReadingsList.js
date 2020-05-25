@@ -21,20 +21,21 @@ import { useReadings } from '../context'
 import RNFetchBlob from 'react-native-fetch-blob';
 
 const ReadingsList = ({ navigation }) => {
-    const {readings, setReadings} = useReadings()
+    const { readings, setReadings } = useReadings()
 
     useEffect(() => {
-        loadReadings();
+        loadReadings(); //TODA VEZ QUE A LISTA DE LEITURAS SER ALTERADA, SOFRERÁ ATUALIZAÇÃO
     }, []);
 
+    //FUNÇÃO PARA ATUALIZAÇÃO DA LISTA
     async function loadReadings() {
         const realm = await getRealm();
         const data = realm.objects('Reading').sorted('id', true);
         setReadings(data)
         global.empty_list = readings.length == 0 ? true : false;
-        console.log('list: ', readings)
     }
 
+    //REMOVE UMA LEITURA DO BANCO DE DADOS
     async function deleteReading(data) {
         try {
             const realm = await getRealm();
@@ -44,11 +45,17 @@ const ReadingsList = ({ navigation }) => {
                 realm.delete(leitura)
             });
             loadReadings()
+            ToastAndroid.showWithGravity(
+                `Leitura removida com sucesso`,
+                ToastAndroid.SHORT,
+                ToastAndroid.CENTER
+            );
         } catch (err) {
             console.log(err)
         }
     }
 
+    //EXPORTA UMA ARQUIVO .CSV NA PASTA DOWNLOADS COM AS INFORMAÇÕES DA LEITURA SELECIONADA
     async function exportCsv(data) {
         try {
             const realm = await getRealm();
@@ -58,20 +65,19 @@ const ReadingsList = ({ navigation }) => {
 
             const freq = leitura[0].freqs.split(',').map(Number)
             const time = leitura[0].times.split(',').map(Number)
-            
+
             const rowString = time.map(function (e, i) {
                 return ['"' + String(e) + '"', (i == time.length - 1 ? '"' + String(freq[i]) + '"' : '"' + String(freq[i]) + '"\n')];
             }).join('');
-    
-            console.log(rowString)
+
             const date = format(
                 new Date(leitura[0].timeStamp),
                 "yyyy'-'MM'-'dd'T'HHmm'",
             )
-    
+
             const csvString = `${rowString}`;
             const label = `SIGNAPP_${date}.csv`
-    
+
             const pathToWrite = `${RNFetchBlob.fs.dirs.DownloadDir}/${label}`;
             console.log('pathToWrite', pathToWrite);
             RNFetchBlob.fs
@@ -83,7 +89,7 @@ const ReadingsList = ({ navigation }) => {
                         ToastAndroid.SHORT,
                         ToastAndroid.CENTER
                     );
-    
+
                 })
                 .catch(error => console.error(error));
         } catch (err) {
@@ -91,6 +97,7 @@ const ReadingsList = ({ navigation }) => {
         }
     }
 
+    //JANELA DE ALERTA PARA CONFIRMAR A REMOÇÃO DE UMA LEITURA DO BANCO DE DADOS
     function confirmDeletion(data) {
         Alert.alert(
             "",
@@ -110,6 +117,7 @@ const ReadingsList = ({ navigation }) => {
         );
     }
 
+    //FUNÇÃO PARA CERTIFICAR QUE O USUÁRIO JÁ SE CONECTOU AO DISPOSITIVO ANTES DE INICIAR A PLOTAGEM 
     function goToPlot() {
         if (global.connected) {
             navigation.navigate('Plot Real Time')
@@ -133,6 +141,7 @@ const ReadingsList = ({ navigation }) => {
         }
     }
 
+    //FUNÇÃO PARA CARREGAR O ARQUIVO .CSV EXISTENTE
     function uploadFile() {
         FilePickerManager.showFilePicker(null, (response) => {
 

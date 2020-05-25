@@ -25,18 +25,21 @@ const PlotExistingChart = ({ route, navigation, data }) => {
 
     useEffect(() => {
         if(route.params.path){
-            uploadFile(route.params.path);
+            uploadFile(route.params.path); //CASO A VIEW SEJA ACESSADA UTILIZANDO O UPLOAD FILE
         }
         else{
-            getFromDatabase(route.params.data)
+            getFromDatabase(route.params.data) //CASO A VIEW SEJA ACESSADA UTILIZANDO A LISTA DE LEITURAS
         }
     }, [route.params.path, route.params.data])
 
+    //DIMENSÕES PARA ESTRUTURAR A TABELA DE VALORES
     const screenWidth = Dimensions.get("window").width;
     const screenHeight = Dimensions.get("window").height;
+
+    //CABEÇALHO DA TABELA
     const tableHead = ['Tempo (s)', 'Frequência (Hz)'];
 
-
+    //CONFIGURAÇÕES VISUAIS DO GRÁFICO
     const chartConfig = {
         backgroundColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         backgroundGradientFrom: '#fff',
@@ -55,6 +58,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
         }
     }
 
+    //AJUSTE PARA QUE O EIXO X APRESENTE 5 VALORES DE REFERÊNCIA PARA LEITURAS MAIORES DE 10
     function fixXLabel(times) {
         let i = 0;
         const xlabel = [];
@@ -77,6 +81,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
         return xlabel
     }
 
+    //RECEBER E FORMATAR A DATA DE LEITURA
     const getTimeStamp = (path) => {
         const min = path.slice(-6,-4)
         const hour = path.slice(-8,-6)
@@ -86,6 +91,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
         setTimeStamp(ts)
     }
 
+    //FUNÇÃO PARA TRATAR OS DADOS QUE CHEGAM POR ARQUIVO .CSV
     const uploadFile = (path) => {
         const times = []
         const freqs = []
@@ -97,7 +103,6 @@ const PlotExistingChart = ({ route, navigation, data }) => {
                     dynamicTyping: true,
                     complete: results => {
                         setTableData(results.data)
-                        console.log(results.data)
                         for (let data of results.data) {
                             times.push(parseFloat(data[0]))
                             freqs.push(parseFloat(data[1]))
@@ -120,6 +125,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
         }
     }
 
+    //FUNÇÃO PARA TRATAR OS DADOS QUE SÃO ACESSADOR POR BANCO DE DADOS
     async function getFromDatabase(data) {
         try {
             const realm = await getRealm();
@@ -152,6 +158,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
         }
     }
 
+    //FUNÇÃO PARA CERTIFICAR QUE O USUÁRIO JÁ SE CONECTOU AO DISPOSITIVO ANTES DE INICIAR A PLOTAGEM 
     function goToPlot() {
         if(global.connected) {
             navigation.navigate('Plot Real Time')
@@ -171,7 +178,6 @@ const PlotExistingChart = ({ route, navigation, data }) => {
               );
         }
     }
-
 
     return (
         <View style={styles.secondaryContainer}>

@@ -25,7 +25,7 @@ import RNFetchBlob from 'react-native-fetch-blob';
 import getRealm from '../services/realm';
 import { useReadings } from '../context'
 
-const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
+const PlotRealTime = ({ navigation }) => {
     const [freqs, setFreqs] = useState([0])
     const [times, setTimes] = useState([0])
     const [chartPlot, setChartPlot] = useState()
@@ -41,9 +41,10 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
     const {readings, setReadings} = useReadings()
 
     useEffect(() => {
-        loadReadings();
+        loadReadings(); //TODA VEZ QUE A LISTA DE LEITURAS SER ALTERADA, SOFRERÁ ATUALIZAÇÃO
     }, []);
 
+    //FUNÇÃO PARA ATUALIZAÇÃO DA LISTA
     async function loadReadings() {
         const realm = await getRealm();
         const data = realm.objects('Reading').sorted('id', true);
@@ -51,6 +52,7 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
         global.empty_list = readings.length == 0 ? true : false;
     }
 
+    //CONFIGURAÇÕES VISUAIS DO GRÁFICO
     const chartConfig = {
         backgroundColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         backgroundGradientFrom: '#fff',
@@ -69,6 +71,7 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
         }
     }
 
+    //FUNÇÃO PARA RECEBER OS DADOS VIA BLUETOOTH
     function receiveData() {
         const freq = []
         const time = []
@@ -83,7 +86,8 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
                 freq.push(parseFloat(data))
                 setFreqs([...freq])
 
-                time.push(++count)
+                count = count + 0.5 
+                time.push(count) //PARA PEGAR TEMPOS MENORES, ALTERAR ESTE INTERVALO
                 setTimes([...time])
 
                 setChartPlot({
@@ -99,16 +103,17 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
                     BluetoothSerial.removeSubscription(subscription);
                 }
             }, '\n');
-        }, 1500))
-    }
+        }, 600)) //PARA PEGAR TEMPOS MENORES, ALTERAR ESTE INTERVALO
+    }             //-> CUIDADO COM INTERVALOS PEQUENOS, IRÁ REPETIR VALORES
 
+    //PARA A RECEPÇÃO DE DADOS E CHAMA A FUNÇÃO PARA INSERÇÃO NO BANCO DE DADOS
     function stopReceiving() {
         clearInterval(receiving)
         console.log('Leitura finalizada')
-
         addToDatabase()
     }
 
+    //INSERE O VALOR LIDO NO BANCO DE DADOS
     async function addToDatabase() {
         try {
             const realm = await getRealm();
@@ -132,6 +137,7 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
         }
     }
 
+    //FUNÇÃO PARA EXPORTAR UM ARQUIVO .CSV DA LEITURA REALIZADA
     function exportCsv() {
         const rowString = times.map(function (e, i) {
             return ['"' + String(e) + '"', (i == times.length - 1 ? '"' + String(freqs[i]) + '"' : '"' + String(freqs[i]) + '"\n')];
@@ -146,7 +152,7 @@ const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
         const label = `SIGNAPP_${date}.csv`
 
         const pathToWrite = `${RNFetchBlob.fs.dirs.DownloadDir}/${label}`;
-        console.log('pathToWrite', pathToWrite);
+        console.log('Caminho em que o arquivo foi salvo: ', pathToWrite);
         RNFetchBlob.fs
             .writeFile(pathToWrite, csvString, 'utf8')
             .then(() => {

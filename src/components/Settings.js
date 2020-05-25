@@ -35,6 +35,7 @@ export default class Settings extends Component {
 
     }
 
+    //RETORNA UMA LISTA COM OS DISPOSITIVOS EMPARELHADOS E DISPONÍVEIS PARA CONEXÃO
     async getDevices() {
         await Promise.all([BluetoothSerial.isEnabled(), BluetoothSerial.list()]).then(
             values => {
@@ -45,6 +46,7 @@ export default class Settings extends Component {
         );
     }
 
+    //HABILITAR O BLUETOOTH ASSIM QUE A VIEW FOR ABERTA
     async componentDidMount() {
         await this.enable()
     }
@@ -56,6 +58,7 @@ export default class Settings extends Component {
         </View>)
     }
 
+    //HABILITAR O BLUETOOTH
     async enable() {
         BluetoothSerial.enable()
             .then((res) => {
@@ -66,6 +69,7 @@ export default class Settings extends Component {
         await this.getDevices()
     }
 
+    //DESABILITAR O BLUETOOTH
     async disable() {
         await this.disconnect()
         BluetoothSerial.disable()
@@ -73,10 +77,12 @@ export default class Settings extends Component {
             .catch((err) => console.log(err.message))
     }
 
+    //BOTÃO DE TOGGLE DO BLUETOOTH CHAMANDO AS FUNÇÕES
     toggleBluetooth(value) {
         value ? this.enable() : this.disable()
     }
 
+    //DESCOBRIR DISPOSITIVOS QUE NAO FORAM EMPARELHADOS
     discoverUnpaired() {
         if (this.state.discovering) {
             return false
@@ -90,6 +96,7 @@ export default class Settings extends Component {
         }
     }
 
+    //CANCELAR A DESCOBERTA
     cancelDiscovery() {
         if (this.state.discovering) {
             BluetoothSerial.cancelDiscovery()
@@ -100,6 +107,7 @@ export default class Settings extends Component {
         }
     }
 
+    //CONECTAR A UM DISPOSITIVO BLUETOOTH
     connect(device) {
         this.setState({ connecting: true })
         console.log({ device })
@@ -123,12 +131,14 @@ export default class Settings extends Component {
             .catch((err) => console.log(err.message))
     }
 
+    //DISCONECTAR DE UM DISPOSITIVO BLUETOOTH
     async disconnect() {
         BluetoothSerial.disconnect()
             .then(() => this.setState({ connected: false }))
             .catch((err) => console.log(err.message))
     }
 
+    //BOTAO DE TOGGLE PARA ALTERAR A INTERFACE
     toggleConnect(value) {
         if (value === true && this.state.device) {
             this.connect(this.state.device)
@@ -137,6 +147,7 @@ export default class Settings extends Component {
         }
     }
 
+    //FUNÇÃO PARA CERTIFICAR QUE O USUÁRIO JÁ SE CONECTOU AO DISPOSITIVO ANTES DE INICIAR A PLOTAGEM 
     goToPlot() {
         if (global.connected) {
             this.props.navigation.navigate('Plot Real Time')
@@ -145,6 +156,7 @@ export default class Settings extends Component {
         }
     }
 
+    //FUNÇÃO PARA CARREGAR O ARQUIVO .CSV EXISTENTE
     uploadFile() {
         FilePickerManager.showFilePicker(null, (response) => {
 
@@ -170,7 +182,6 @@ export default class Settings extends Component {
             }
         });
     }
-
 
     render() {
         return (
