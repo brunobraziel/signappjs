@@ -19,7 +19,6 @@ import pt from 'date-fns/locale/pt-BR';
 import FilePickerManager from 'react-native-file-picker';
 import { useReadings } from '../context'
 import RNFetchBlob from 'react-native-fetch-blob';
-import { RevealFromBottomAndroidSpec } from 'react-navigation-stack/lib/typescript/src/vendor/TransitionConfigs/TransitionSpecs';
 
 const ReadingsList = ({ navigation }) => {
     const {readings, setReadings} = useReadings()
@@ -59,42 +58,34 @@ const ReadingsList = ({ navigation }) => {
 
             const freq = leitura[0].freqs.split(',').map(Number)
             const time = leitura[0].times.split(',').map(Number)
-
             
-            console.log('time', time)
-            console.log('freq', freq)
-
-            const rowString = []
-            let i = 0
-
-            for(i = 0; i < time.length; i++){
-                rowString.push(`${time[i]},${freq[i]}`)
-            }
-            
+            const rowString = time.map(function (e, i) {
+                return ['"' + String(e) + '"', (i == time.length - 1 ? '"' + String(freq[i]) + '"' : '"' + String(freq[i]) + '"\n')];
+            }).join('');
+    
             console.log(rowString)
+            const date = format(
+                new Date(leitura[0].timeStamp),
+                "yyyy'-'MM'-'dd'T'HHmm'",
+            )
     
-            // const date = format(
-            //     new Date(leitura[0].timeStamp),
-            //     "yyyy'-'MM'-'dd'T'HHmm'",
-            // )
+            const csvString = `${rowString}`;
+            const label = `SIGNAPP_${date}.csv`
     
-            // const csvString = `${rowString}`;
-            // const label = `SIGNAPP_${date}.csv`
+            const pathToWrite = `${RNFetchBlob.fs.dirs.DownloadDir}/${label}`;
+            console.log('pathToWrite', pathToWrite);
+            RNFetchBlob.fs
+                .writeFile(pathToWrite, csvString, 'utf8')
+                .then(() => {
+                    console.log(`wrote file ${pathToWrite}`);
+                    ToastAndroid.showWithGravity(
+                        `Arquivo .csv criado na pasta Downloads`,
+                        ToastAndroid.SHORT,
+                        ToastAndroid.CENTER
+                    );
     
-            // const pathToWrite = `${RNFetchBlob.fs.dirs.DownloadDir}/${label}`;
-            // console.log('pathToWrite', pathToWrite);
-            // RNFetchBlob.fs
-            //     .writeFile(pathToWrite, csvString, 'utf8')
-            //     .then(() => {
-            //         console.log(`wrote file ${pathToWrite}`);
-            //         ToastAndroid.showWithGravity(
-            //             `Arquivo .csv criado na pasta Downloads`,
-            //             ToastAndroid.SHORT,
-            //             ToastAndroid.CENTER
-            //         );
-    
-            //     })
-            //     .catch(error => console.error(error));
+                })
+                .catch(error => console.error(error));
         } catch (err) {
             console.log(err)
         }
