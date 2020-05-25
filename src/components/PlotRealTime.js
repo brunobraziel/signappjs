@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Dimensions,
     Text,
     View,
-    TouchableOpacity
+    TouchableOpacity,
+    ToastAndroid
 } from 'react-native';
 import { LineChart } from "react-native-chart-kit";
 import styles from '../styles/index';
@@ -14,12 +15,17 @@ import {
     faStop,
     faUndoAlt,
     faDownload,
-    faListAlt
+    faListAlt,
+    faListOl
 } from '@fortawesome/free-solid-svg-icons';
 import { format } from 'date-fns';
 import pt from 'date-fns/locale/pt-BR';
+import * as Animatable from 'react-native-animatable';
+import RNFetchBlob from 'react-native-fetch-blob';
+import getRealm from '../services/realm';
+import { useReadings } from '../context'
 
-const PlotRealTime = ({ route, navigateToHomeScreen }) => {
+const PlotRealTime = ({ route, navigation, navigateToHomeScreen }) => {
     const [freqs, setFreqs] = useState([0])
     const [times, setTimes] = useState([0])
     const [chartPlot, setChartPlot] = useState()
@@ -28,20 +34,39 @@ const PlotRealTime = ({ route, navigateToHomeScreen }) => {
     const [stopPlot, setStopPlot] = useState(true) //PARA DESATIVAR O STOP NO INICIO
     const [restartPlot, setRestartPlot] = useState(true) //PARA DESATIVAR O STOP NO INICIO
     const [endPlot, setEndPlot] = useState(false) //PARA DESATIVAR O STOP NO INICIO
-    const [timeStamp, setTimeStamp] = useState(format(
-        new Date(), //AQUI VAMOS PASSAR O ULTIMO DIA
-        "dd 'de' MMMM' às 'HH'h'mm",
-        { locale: pt }
-    ));
+    const [timeStamp, setTimeStamp] = useState(new Date());
+    const [dado, setDado] = useState()
     const screenWidth = Dimensions.get("window").width;
     const screenHeight = Dimensions.get("window").height;
+    const {readings, setReadings} = useReadings()
+
+    useEffect(() => {
+        loadReadings();
+    }, []);
+
+    async function loadReadings() {
+        const realm = await getRealm();
+        const data = realm.objects('Reading').sorted('id', true);
+        setReadings(data)
+        global.empty_list = readings.length == 0 ? true : false;
+    }
 
     const chartConfig = {
         backgroundColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         backgroundGradientFrom: '#fff',
         backgroundGradientTo: '#fff',
+        backgroundGradientFromOpacity: 0,
+        decimalPlaces: 2, // optional, defaults to 2dp
         color: (opacity = 1) => `rgba(58, 56, 239, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`
+        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+        style: {
+            borderRadius: 16
+        },
+        propsForDots: {
+            r: "6",
+            strokeWidth: "2",
+            stroke: "#fff"
+        }
     }
 
     function receiveData() {
@@ -50,11 +75,12 @@ const PlotRealTime = ({ route, navigateToHomeScreen }) => {
         let count = 0
 
         console.log('Iniciando a leitura dos dados: ')
+        setTimeStamp(new Date())
         setReceiving(setInterval(() => {
             BluetoothSerial.read((data, subscription) => {
 
                 //LEITURA DA FREQUENCIA PLOT    
-                freq.push(parseInt(data))
+                freq.push(parseFloat(data))
                 setFreqs([...freq])
 
                 time.push(++count)
@@ -79,29 +105,90 @@ const PlotRealTime = ({ route, navigateToHomeScreen }) => {
     function stopReceiving() {
         clearInterval(receiving)
         console.log('Leitura finalizada')
+
+        addToDatabase()
+    }
+
+    async function addToDatabase() {
+        try {
+            const realm = await getRealm();
+            let id = global.empty_list ? 0 : realm.objects('Reading').sorted('id', true)[0].id;
+
+            const dado = {
+                id: ++id,
+                timeStamp: String(timeStamp),
+                freqs: String(freqs),
+                times: String(times)
+            }
+
+            realm.write(() => {
+                realm.create('Reading', dado)
+            });
+            setDado(dado)
+            console.log(`Adicionada leitura ${dado.id} ao banco de dados`)
+            global.empty_list = false
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    function exportCsv() {
+        const rowString = times.map(function (e, i) {
+            return ['"' + String(e) + '"', (i == times.length - 1 ? '"' + String(freqs[i]) + '"' : '"' + String(freqs[i]) + '"\n')];
+        }).join('');
+
+        const date = format(
+            timeStamp,
+            "yyyy'-'MM'-'dd'T'HHmm'",
+        )
+
+        const csvString = `${rowString}`;
+        const label = `SIGNAPP_${date}.csv`
+
+        const pathToWrite = `${RNFetchBlob.fs.dirs.DownloadDir}/${label}`;
+        console.log('pathToWrite', pathToWrite);
+        RNFetchBlob.fs
+            .writeFile(pathToWrite, csvString, 'utf8')
+            .then(() => {
+                console.log(`wrote file ${pathToWrite}`);
+                ToastAndroid.showWithGravity(
+                    `Arquivo .csv criado na pasta Downloads`,
+                    ToastAndroid.SHORT,
+                    ToastAndroid.CENTER
+                );
+
+            })
+            .catch(error => console.error(error));
     }
 
     return (
         <View style={styles.secondaryContainer}>
-            <View
-                style={styles.barPlot}>
-                {chartPlot && <LineChart
-                    data={chartPlot}
-                    width={screenWidth - 20}
-                    height={screenHeight / 3}
-                    chartConfig={chartConfig}
-                    withInnerLines={false}
-                    bezier
-                    style={{
-                        marginVertical: 10,
-                        borderRadius: 16,
-                        marginTop: 50
-                    }}
-                />}
-            </View>
+            {
+                startPlot && <Animatable.View
+                    animation={'fadeInDown'}
+                    style={styles.barPlot}>
+                    {chartPlot && <LineChart
+                        data={chartPlot}
+                        width={screenWidth - 20}
+                        height={screenHeight / 3}
+                        chartConfig={chartConfig}
+                        withInnerLines={false}
+                        bezier
+                        style={{
+                            marginVertical: 10,
+                            borderRadius: 16,
+                            marginTop: 50
+                        }}
+                    />}
+                </Animatable.View>
+            }
 
             <View>
-                <Text>Leitura realizada dia {timeStamp}</Text>
+                <Text>Leitura realizada dia {format(
+                    timeStamp,
+                    "dd 'de' MMMM' às 'HH'h'mm",
+                    { locale: pt }
+                )}</Text>
                 <Text style={{ marginTop: 30 }}>Frequência: {freqs[freqs.length - 1]} Hz</Text>
                 <Text>Tempo: {times[times.length - 1]} s</Text>
 
@@ -146,11 +233,6 @@ const PlotRealTime = ({ route, navigateToHomeScreen }) => {
                         setStartPlot(false) //NAO DEIXA QUE O USUÁRIO DÊ PLAY DEPOIS DE PARAR A PLOTAGEM
                         setStopPlot(true)
                         setEndPlot(false)
-                        setTimeStamp(format(
-                            new Date(), //AQUI VAMOS PASSAR O ULTIMO DIA
-                            "dd 'de' MMMM' às 'HH'h'mm",
-                            { locale: pt }
-                        ))
                         setFreqs([])
                         setTimes([])
                     }
@@ -164,38 +246,55 @@ const PlotRealTime = ({ route, navigateToHomeScreen }) => {
                     />
                 </TouchableOpacity>
             </View>
-                <View style={styles.groupButtonsAfterPlot}>
-            {
-                endPlot && <>
-                    <TouchableOpacity
-                        onPress={() => {
-
-                        }
-                        }
-                        style={styles.buttonAfterPlot}>
-                        <FontAwesomeIcon
-                            style={styles.enabledPlot}
-                            icon={faDownload}
-                            size={25}
-                        />
-                        <Text>EXPORTAR .CSV        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => {
-
-                        }
-                        }
-                        style={styles.buttonAfterPlot}>
-                        <FontAwesomeIcon
-                            style={styles.enabledPlot}
-                            icon={faListAlt}
-                            size={25}
-                        />
-                        <Text>TODOS OS VALORES</Text>
-                    </TouchableOpacity>
-                    </>
-            }
-                </View>
+            <View style={styles.groupButtonsAfterPlot}>
+                {
+                    endPlot && <Animatable.View animation={'fadeInUp'}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                exportCsv()
+                            }
+                            }
+                            style={styles.buttonAfterPlot}>
+                            <FontAwesomeIcon
+                                style={styles.enabledPlot}
+                                icon={faDownload}
+                                size={25}
+                            />
+                            <Text>EXPORTAR .CSV        </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate('Plot Existing Chart',
+                                {
+                                    'data': dado.id
+                                }
+                            )
+                            }
+                            }
+                            style={styles.buttonAfterPlot}>
+                            <FontAwesomeIcon
+                                style={styles.enabledPlot}
+                                icon={faListOl}
+                                size={25}
+                            />
+                            <Text>VISUALIZAR VALORES</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate('Readings List')
+                            }
+                            }
+                            style={styles.buttonAfterPlot}>
+                            <FontAwesomeIcon
+                                style={styles.enabledPlot}
+                                icon={faListAlt}
+                                size={25}
+                            />
+                            <Text>TODAS AS LEITURAS</Text>
+                        </TouchableOpacity>
+                    </Animatable.View >
+                }
+            </View>
         </View>
     )
 }

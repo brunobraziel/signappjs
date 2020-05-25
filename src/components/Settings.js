@@ -6,11 +6,12 @@ import {
     Modal,
     Switch,
     TouchableOpacity,
-    Linking
+    Linking,
 } from 'react-native'
 import styles from '../styles/index'
 import { Divider } from 'react-native-elements';
 import BluetoothSerial from 'react-native-bluetooth-serial-next';
+import FilePickerManager from 'react-native-file-picker';
 
 export default class Settings extends Component {
 
@@ -18,7 +19,7 @@ export default class Settings extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            isEnabled: false,
+            isEnabled: true,
             discovering: false,
             devices: [],
             unpairedDevices: [],
@@ -102,15 +103,22 @@ export default class Settings extends Component {
     connect(device) {
         this.setState({ connecting: true })
         console.log({ device })
+
+        ToastAndroid.showWithGravity(
+            `Conectando-se com ${device.name}`,
+            ToastAndroid.SHORT,
+            ToastAndroid.CENTER
+        );
         BluetoothSerial.connect(device.id)
             .then((res) => {
                 ToastAndroid.showWithGravity(
                     `Conectado com ${device.name}`,
-                    ToastAndroid.SHORT,
+                    ToastAndroid.LONG,
                     ToastAndroid.CENTER
                 );
                 console.log(`Connected to device ${device.name}`)
                 this.setState({ device, connected: true, connecting: false })
+                global.connected = true;
             })
             .catch((err) => console.log(err.message))
     }
@@ -128,6 +136,41 @@ export default class Settings extends Component {
             this.disconnect()
         }
     }
+
+    goToPlot() {
+        if (global.connected) {
+            this.props.navigation.navigate('Plot Real Time')
+        } else {
+            ToastAndroid.show("Conecte-se ao dispositivo antes de iniciar uma leitura.", ToastAndroid.SHORT);
+        }
+    }
+
+    uploadFile() {
+        FilePickerManager.showFilePicker(null, (response) => {
+
+            if (response.didCancel) {
+                console.log('User cancelled file picker');
+            }
+            else if (response.error) {
+                console.log('FilePickerManager Error: ', response.error);
+            }
+            else if (response.path.includes("SIGNAPP")) {
+                this.setState({
+                    file: response
+                });
+                this.props.navigation.navigate('Plot Existing Chart',
+                    {
+                        'path': response.path
+                    }
+                )
+            }
+            else {
+                console.log('Not an SIGNAPP.csv file');
+                ToastAndroid.show("Arquivo inválido. Por favor, adicione um arquivo do tipo SIGNAPP.csv", ToastAndroid.SHORT);
+            }
+        });
+    }
+
 
     render() {
         return (
@@ -200,49 +243,69 @@ export default class Settings extends Component {
 
                     </View>
                 </View>
-                {
-                    this.state.devices.map(device => {
-                        return (
-                            <Modal
-                                transparent={true}
-                                key={device.address}
-                                visible={this.state.showModal}
-                                onRequestClose={() => {
-                                    this.setState({
-                                        showModal: false
-                                    })
-                                }}>
-                                <TouchableOpacity
-                                    style={styles.modalDevicesOutter}
-                                    onPressOut={() => {
-                                        this.setState({
-                                            showModal: false
-                                        })
-                                    }}>
-                                    <View style={styles.modalDevicesInner}>
-                                        <Text style={{ fontSize: 20, marginBottom: 20 }}>Dispositivos pareados</Text>
 
-                                        <TouchableOpacity onPress={() => {
+
+                <Modal
+                    transparent={true}
+                    visible={this.state.showModal}
+                    onRequestClose={() => {
+                        this.setState({
+                            showModal: false
+                        })
+                    }}>
+                    <TouchableOpacity
+                        style={styles.modalDevicesOutter}
+                        onPressOut={() => {
+                            this.setState({
+                                showModal: false
+                            })
+                        }}>
+                        <View style={styles.modalDevicesInner}>
+                            <Text style={{ fontSize: 20, marginBottom: 20 }}>Dispositivos pareados</Text>
+
+                            {this.state.devices.map(device => {
+                                return (
+                                    <TouchableOpacity
+
+                                        key={device.address}
+                                        onPress={() => {
                                             this.connect(device)
                                             this.setState({
                                                 showModal: false
                                             })
                                         }
                                         }>
-                                            <Text style={{ margin: 10 }}>{device.name}</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </TouchableOpacity>
-                            </Modal>
-                        )
-                    })
-                }
+                                        <Text style={{ margin: 10 }}>{device.name}</Text>
+                                        <Divider style={styles.divider} />
+                                    </TouchableOpacity>
+                                )
+                            })
+                            }
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
+
+
                 <View style={styles.fillVoid}></View>
-                <View>
+                <View style={styles.groupsetButtons}>
+                    <TouchableOpacity
+                        style={styles.secButton}
+                        onPress={() => {
+                            this.props.navigation.navigate('Readings List')
+                        }}>
+                        <Text style={styles.sectextButtonRead}>Todas as Leituras</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.secButton}
+                        onPress={() => {
+                            this.uploadFile()
+                        }}>
+                        <Text style={styles.sectextButtonRead}>Importar Leitura</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.readButton}
                         onPress={() => {
-                            this.props.navigation.navigate('Plot Real Time')
+                            this.goToPlot()
                         }}>
                         <Text style={styles.textButtonRead}>Nova Leitura</Text>
                     </TouchableOpacity>

@@ -1,4 +1,8 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import {
+    StyleSheet,
+    Dimensions
+} from 'react-native';
+import styled from 'styled-components/native';
 
 var width = Dimensions.get('window').width;
 var height = Dimensions.get('window').height;
@@ -7,7 +11,7 @@ var secColor = '#fff'
 var thirdColor = '#3A38EF'
 var radius = 20
 
-const styles = StyleSheet.create({
+export default styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-end',
@@ -27,7 +31,6 @@ const styles = StyleSheet.create({
         marginTop: 50,
         backgroundColor: primColor
     },
-
     bottomButton: {
         flex: 1,
         justifyContent: 'flex-end',
@@ -63,6 +66,10 @@ const styles = StyleSheet.create({
         color: secColor,
         fontSize: 15
     },
+    sectextButtonRead: {
+        color: 'black',
+        fontSize: 15
+    },
     groupButtons: {
         flexDirection: 'row',
         width: width - 50,
@@ -86,22 +93,38 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: radius,
-        marginTop: 30,
-        marginBottom: 30,
+        marginTop: 10,
+        marginLeft: 15,
+        marginBottom: 10
+    },
+    secButton: {
+        backgroundColor: '#FFF',
+        fontWeight: 'bold',
+        width: width - 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: radius,
+        marginTop: 10,
         marginLeft: 15
     },
     lastReading: {
         backgroundColor: secColor,
         borderRadius: radius,
         width: width - 50,
-        height: height / 8,
-        marginTop: 100
+        height: height / 8
+    },
+    lastReadingBox: {
+        borderRadius: radius,
+        width: width - 50,
+        height: height / 8
     },
     listReading: {
         backgroundColor: secColor,
         borderRadius: radius,
         width: width - 50,
-        height: height / 4
+        height: height / 4,
+        marginBottom: 50
     },
     barPlot: {
         width: width,
@@ -182,7 +205,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     fillVoid: {
-        height: height / 5
+        height: height - 800
     },
     buttonPlot: {
         backgroundColor: primColor,
@@ -196,21 +219,51 @@ const styles = StyleSheet.create({
     groupPlotButtons: {
         flexDirection: 'row'
     },
-    disabledPlot: {color: 'grey'},
-    enabledPlot: {color: 'black'},
+    disabledPlot: { color: 'grey' },
+    enabledPlot: { color: 'black' },
     groupButtonsAfterPlot: {
         flexDirection: 'column'
     },
     buttonAfterPlot: {
         backgroundColor: primColor,
         borderRadius: 10,
-        width: width/1.6,
+        width: width / 1.6,
         height: 70,
         justifyContent: 'space-evenly',
         flexDirection: 'row',
         alignItems: 'center',
         margin: 10
     },
-});
+    groupsetButtons: {
+        flexDirection: 'column'
+    },
+    listContainer: {
+        flex: 1,
+        flexDirection: 'column',
+        marginTop: 50
+    },
+    readingItem: {
+        backgroundColor: secColor,
+        height: 50,
+        padding: 5,  
+        justifyContent: 'center'
+    },
+    buttonsSwipe: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 5
+    },
+    deleteSwipe: {
+        alignSelf: 'flex-end',
+        width: width/2
+    },
+    exportSwipe: {
+        alignSelf: 'flex-start',
+        width: width/2
+    },
+    rowSwipe: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
 
-export default styles;
+});
