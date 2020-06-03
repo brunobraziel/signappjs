@@ -37,24 +37,21 @@ const PlotExistingChart = ({ route, navigation, data }) => {
     const screenHeight = Dimensions.get("window").height;
 
     //CABEÇALHO DA TABELA
-    const tableHead = ['Tempo (s)', 'Frequência (Hz)'];
+    const tableHead = ['Tempo (s)', 'Tensão (V)'];
 
     //CONFIGURAÇÕES VISUAIS DO GRÁFICO
     const chartConfig = {
-        backgroundColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         backgroundGradientFrom: '#fff',
         backgroundGradientTo: '#fff',
-        backgroundGradientFromOpacity: 0,
-        decimalPlaces: 2, // optional, defaults to 2dp
+        fillShadowGradientOpacity: 0,
         color: (opacity = 1) => `rgba(58, 56, 239, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         style: {
             borderRadius: 16
         },
         propsForDots: {
-            r: "6",
-            strokeWidth: "2",
-            stroke: "#fff"
+            r: "0",
+            strokeWidth: "0"
         }
     }
 
@@ -110,7 +107,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
                         setFreqs(freqs)
                         setTimes(times)
                         setChartPlot({
-                            labels: times.length < 15 ? times : fixXLabel(times),
+                            //labels: times.length < 15 ? times : fixXLabel(times),
                             datasets: [
                                 {
                                     data: freqs
@@ -139,7 +136,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
                 { locale: pt }
             ))            
             setChartPlot({
-                labels: time.length < 15 ? time : fixXLabel(time),
+                //labels: time.length < 15 ? time : fixXLabel(time),
                 datasets: [
                     {
                         data: freq
@@ -192,7 +189,6 @@ const PlotExistingChart = ({ route, navigation, data }) => {
                     height={screenHeight / 3}
                     chartConfig={chartConfig}
                     withInnerLines={false}
-                    bezier
                     style={{
                         marginVertical: 10,
                         borderRadius: 16,

@@ -24,7 +24,6 @@ export default class Settings extends Component {
             devices: [],
             unpairedDevices: [],
             connected: false,
-            connected: false,
             showModal: false,
             colorPlot: ""
         }
@@ -73,7 +72,10 @@ export default class Settings extends Component {
     async disable() {
         await this.disconnect()
         BluetoothSerial.disable()
-            .then((res) => this.setState({ isEnabled: false }))
+            .then((res) => {
+                this.setState({ isEnabled: false })
+                global.connected = false
+            })
             .catch((err) => console.log(err.message))
     }
 
@@ -134,7 +136,10 @@ export default class Settings extends Component {
     //DISCONECTAR DE UM DISPOSITIVO BLUETOOTH
     async disconnect() {
         BluetoothSerial.disconnect()
-            .then(() => this.setState({ connected: false }))
+            .then(() => {
+                this.setState({ connected: false })
+                global.connected = false
+            })
             .catch((err) => console.log(err.message))
     }
 

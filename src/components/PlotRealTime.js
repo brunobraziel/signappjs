@@ -26,10 +26,11 @@ import getRealm from '../services/realm';
 import { useReadings } from '../context'
 
 const PlotRealTime = ({ navigation }) => {
-    const [freqs, setFreqs] = useState([0])
-    const [times, setTimes] = useState([0])
+    const [freqs, setFreqs] = useState()
+    const [times, setTimes] = useState()
     const [chartPlot, setChartPlot] = useState()
     const [receiving, setReceiving] = useState()
+    const [innerreceiving, setInnerReceiving] = useState()
     const [startPlot, setStartPlot] = useState(false) //PARA ATIVAR O PLAY NO INICIO
     const [stopPlot, setStopPlot] = useState(true) //PARA DESATIVAR O STOP NO INICIO
     const [restartPlot, setRestartPlot] = useState(true) //PARA DESATIVAR O STOP NO INICIO
@@ -44,71 +45,90 @@ const PlotRealTime = ({ navigation }) => {
         loadReadings(); //TODA VEZ QUE A LISTA DE LEITURAS SER ALTERADA, SOFRERÁ ATUALIZAÇÃO
     }, []);
 
+    useEffect(() => {
+        if (!freqs || !freqs.length) return
+
+        const lenght = freqs.length
+        const data = lenght <= 10 ? freqs : freqs.slice(lenght - 10)
+        setChartPlot({
+            //labels: times.length < 15 ? times : fixXLabel(times),
+            datasets: [
+                {
+                    data
+                }
+            ]
+        })
+    }, [freqs])
+
     //FUNÇÃO PARA ATUALIZAÇÃO DA LISTA
     async function loadReadings() {
         const realm = await getRealm();
         const data = realm.objects('Reading').sorted('id', true);
         setReadings(data)
-        global.empty_list = readings.length == 0 ? true : false;
+        global.empty_list = data.length == 0 ? true : false;
     }
 
     //CONFIGURAÇÕES VISUAIS DO GRÁFICO
     const chartConfig = {
-        backgroundColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
         backgroundGradientFrom: '#fff',
         backgroundGradientTo: '#fff',
-        backgroundGradientFromOpacity: 0,
-        decimalPlaces: 2, // optional, defaults to 2dp
+        fillShadowGradientOpacity: 0,
         color: (opacity = 1) => `rgba(58, 56, 239, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         style: {
             borderRadius: 16
         },
         propsForDots: {
-            r: "6",
-            strokeWidth: "2",
-            stroke: "#fff"
+            r: "0",
+            strokeWidth: "0"
         }
     }
 
     //FUNÇÃO PARA RECEBER OS DADOS VIA BLUETOOTH
-    function receiveData() {
+    async function receiveData() {
         const freq = []
         const time = []
         let count = 0
+        const fbuffer = new ArrayBuffer(1024)
+        const itbuffer = new ArrayBuffer(1024)
+        const tbuffer = new ArrayBuffer(1024)
+        let freqBuffer = new Int16Array(fbuffer)
+        let itBuffer = new Int16Array(itbuffer)
+        let timBuffer = new Float32Array(tbuffer)
 
         console.log('Iniciando a leitura dos dados: ')
         setTimeStamp(new Date())
+        timBuffer[0] = 0
+
         setReceiving(setInterval(() => {
+            itBuffer[0] = 0
+            
             BluetoothSerial.read((data, subscription) => {
+                    
+                //LEITURA DA FREQUENCIA PLOT 
+                freqBuffer[itBuffer[0]] = parseFloat(data)        
+                freq.push(freqBuffer[itBuffer[0]])            
+                
+                //INCREMENTANDO TEMPO
+                timBuffer[0] = timBuffer[0] + 0.2
+                time.push(timBuffer[0])            
 
-                //LEITURA DA FREQUENCIA PLOT    
-                freq.push(parseFloat(data))
-                setFreqs([...freq])
-
-                count = count + 0.5 
-                time.push(count) //PARA PEGAR TEMPOS MENORES, ALTERAR ESTE INTERVALO
-                setTimes([...time])
-
-                setChartPlot({
-                    labels: [...time].length <= 10 ? [...time] : [...time].slice([...time].length - 10),
-                    datasets: [
-                        {
-                            data: [...freq].length <= 10 ? [...freq] : [...freq].slice([...freq].length - 10)
-                        }
-                    ]
-                })
+                itBuffer[0] = itBuffer[0] + 1
 
                 if (subscription) {
                     BluetoothSerial.removeSubscription(subscription);
                 }
-            }, '\n');
-        }, 600)) //PARA PEGAR TEMPOS MENORES, ALTERAR ESTE INTERVALO
-    }             //-> CUIDADO COM INTERVALOS PEQUENOS, IRÁ REPETIR VALORES
+            }, '\n')
+                     
+            setFreqs([...freq])
+            setTimes([...time])         
+        }, 200)) 
+    }             
 
     //PARA A RECEPÇÃO DE DADOS E CHAMA A FUNÇÃO PARA INSERÇÃO NO BANCO DE DADOS
-    function stopReceiving() {
+    async function stopReceiving() {
         clearInterval(receiving)
+        clearInterval(innerreceiving)
         console.log('Leitura finalizada')
         addToDatabase()
     }
@@ -132,6 +152,7 @@ const PlotRealTime = ({ navigation }) => {
             setDado(dado)
             console.log(`Adicionada leitura ${dado.id} ao banco de dados`)
             global.empty_list = false
+            loadReadings()
         } catch (err) {
             console.log(err)
         }
@@ -179,7 +200,6 @@ const PlotRealTime = ({ navigation }) => {
                         height={screenHeight / 3}
                         chartConfig={chartConfig}
                         withInnerLines={false}
-                        bezier
                         style={{
                             marginVertical: 10,
                             borderRadius: 16,
@@ -195,8 +215,8 @@ const PlotRealTime = ({ navigation }) => {
                     "dd 'de' MMMM' às 'HH'h'mm",
                     { locale: pt }
                 )}</Text>
-                <Text style={{ marginTop: 30 }}>Frequência: {freqs[freqs.length - 1]} Hz</Text>
-                <Text>Tempo: {times[times.length - 1]} s</Text>
+                {freqs && <Text style={{ marginTop: 30 }}>Tensão: {freqs[freqs.length - 1]} V</Text>}
+                {times && <Text>Tempo: {times[times.length - 1]} s</Text>}
 
             </View>
 
