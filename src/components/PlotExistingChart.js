@@ -37,7 +37,7 @@ const PlotExistingChart = ({ route, navigation, data }) => {
     const screenHeight = Dimensions.get("window").height;
 
     //CABEÇALHO DA TABELA
-    const tableHead = ['Tempo (s)', 'Tensão (V)'];
+    const tableHead = ['Tempo (s)', 'Frequência (Hz)'];
 
     //CONFIGURAÇÕES VISUAIS DO GRÁFICO
     const chartConfig = {
@@ -106,11 +106,15 @@ const PlotExistingChart = ({ route, navigation, data }) => {
                         }
                         setFreqs(freqs)
                         setTimes(times)
+                        
+                        const lenght = freqs.length
+                        const data = lenght <= 10 ? freqs : freqs.slice(lenght - 90)
+
                         setChartPlot({
                             //labels: times.length < 15 ? times : fixXLabel(times),
                             datasets: [
                                 {
-                                    data: freqs
+                                    data
                                 }
                             ]
                         })
@@ -134,12 +138,16 @@ const PlotExistingChart = ({ route, navigation, data }) => {
                 new Date(leitura[0].timeStamp),
                 "dd 'de' MMMM' às 'HH'h'mm",
                 { locale: pt }
-            ))            
+            ))       
+            
+            const lenght = freq.length
+            const frequencies = lenght <= 10 ? freq : freq.slice(lenght - 90)
+
             setChartPlot({
                 //labels: time.length < 15 ? time : fixXLabel(time),
                 datasets: [
                     {
-                        data: freq
+                        data: frequencies
                     }
                 ]
             })

@@ -119,9 +119,9 @@ const PlotRealTime = ({ navigation }) => {
                     BluetoothSerial.removeSubscription(subscription);
                 }
             }, '\n')
-                     
+                    
             setFreqs([...freq])
-            setTimes([...time])         
+            setTimes([...time])      
         }, 200)) 
     }             
 
@@ -215,7 +215,7 @@ const PlotRealTime = ({ navigation }) => {
                     "dd 'de' MMMM' às 'HH'h'mm",
                     { locale: pt }
                 )}</Text>
-                {freqs && <Text style={{ marginTop: 30 }}>Tensão: {freqs[freqs.length - 1]} V</Text>}
+                {freqs && <Text style={{ marginTop: 30 }}>Frequência: {freqs[freqs.length - 1]} Hz</Text>}
                 {times && <Text>Tempo: {times[times.length - 1]} s</Text>}
 
             </View>
