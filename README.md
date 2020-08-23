@@ -4,7 +4,7 @@ Its main concern is to graphically represent any sort of signals coming from a B
 
 ## Arduino implementation
 My project was intended to build an Arduino system able to read signals using muscle sensors and send it to an Android application via Bluetooth.
-I will also provide my .ino file in this project, so that you can try it out by yourself. 
+I will also provide my .ino file into this project, so that you can try it out by yourself. 
 **Be aware of which pins you are connecting your modules and make sure they're the same**.
 
 ## Android development 
@@ -17,7 +17,7 @@ I created 5 components and below, you can see its main role and which programmin
 |PlotExistingChart.js|Plots readings from both Database and .csv format locations|Functional|
 |PlotRealTime.js|Plots readings from the muscle sensor via Bluetooth connection|Functional|
 |ReadingsList|Shows all the readings from the app|Functional|
-|Settings.js|Handles the Bluetooth connection as well as shows some info about the project|OO|
+|Settings.js|Handles the Bluetooth connection as well as shows some info about the project|Object Oriented|
 
 ### Bluetooth Connection
 For starters, I implemented a script able to read the information captured from the sensor and deliver it through Bluetooth.
@@ -33,4 +33,4 @@ It is quite easy to develop, allowing us to work with querying and offline stora
 You can [click here](https://realm.io/products/realm-database) to understand how this is implemented.
 
 **OBS:** This whole project has comments in Portuguese in order to document for later studies.
-In case of any doubt or suggestions, I will be very glad to attend! 
+In case of any doubt or suggestions, please contact-me. 
