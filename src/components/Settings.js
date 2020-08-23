@@ -7,6 +7,7 @@ import {
     Switch,
     TouchableOpacity,
     Linking,
+    ScrollView
 } from 'react-native'
 import styles from '../styles/index'
 import { Divider } from 'react-native-elements';
@@ -190,143 +191,145 @@ export default class Settings extends Component {
 
     render() {
         return (
-            <View style={styles.thirdContainer}>
-                <View style={styles.settingItem}>
+            <ScrollView>
+                <View style={styles.thirdContainer}>
+                    <View style={styles.settingItem}>
 
-                    <Text style={styles.settingTitle}>Bluetooth</Text>
+                        <Text style={styles.settingTitle}>Bluetooth</Text>
 
-                    <Divider style={styles.divider} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginRight: 20 }}>
-                        <Text style={styles.textBox}>Ativar o dispositivo Bluetooth</Text>
-                        <Switch
-                            value={this.state.isEnabled}
-                            thumbColor={'blue'}
-                            onValueChange={(val) => {
-                                this.toggleBluetooth(val)
-                            }}
-                        />
+                        <Divider style={styles.divider} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginRight: 20 }}>
+                            <Text style={styles.textBox}>Ativar o dispositivo Bluetooth</Text>
+                            <Switch
+                                value={this.state.isEnabled}
+                                thumbColor={'blue'}
+                                onValueChange={(val) => {
+                                    this.toggleBluetooth(val)
+                                }}
+                            />
+                        </View>
+
+                        <View style={styles.buttonViewDevices}>
+                            {
+                                this.state.isEnabled &&
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        this.setState({
+                                            showModal: true
+                                        })
+                                    }}>
+                                    <Divider style={{ marginBottom: 5 }} />
+                                    <Text style={{ fontSize: 15 }}>Conectar com um dispositivo pareado</Text>
+                                </TouchableOpacity>
+                            }
+                        </View>
+
                     </View>
 
-                    <View style={styles.buttonViewDevices}>
-                        {
-                            this.state.isEnabled &&
+                    <View style={styles.settingItem}>
+
+                        <Text style={styles.settingTitle}>Atualizações</Text>
+
+                        <Divider style={styles.divider} />
+                        <Text style={styles.textBox}>Mantenha-se atualizado sobre as últimas releases</Text>
+
+                        <View style={styles.buttonViewDevices}>
                             <TouchableOpacity
                                 onPress={() => {
-                                    this.setState({
-                                        showModal: true
-                                    })
+                                    Linking.openURL('https://github.com/brbraziel/signappjs').catch((err) => console.error('An error occurred', err));
                                 }}>
                                 <Divider style={{ marginBottom: 5 }} />
-                                <Text style={{ fontSize: 15 }}>Conectar com um dispositivo pareado</Text>
+                                <Text style={{ fontSize: 15 }}>Acessar o repositório no GitHub</Text>
                             </TouchableOpacity>
-                        }
+                        </View>
                     </View>
 
-                </View>
 
-                <View style={styles.settingItem}>
+                    <View style={styles.settingItem}>
 
-                    <Text style={styles.settingTitle}>Atualizações</Text>
+                        <Text style={styles.settingTitle}>Sobre</Text>
 
-                    <Divider style={styles.divider} />
-                    <Text style={styles.textBox}>Mantenha-se atualizado sobre as últimas releases</Text>
+                        <Divider style={styles.divider} />
+                        <Text style={styles.textBox}>Versão 1.0</Text>
 
-                    <View style={styles.buttonViewDevices}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                Linking.openURL('https://github.com/brbraziel/signappjs').catch((err) => console.error('An error occurred', err));
-                            }}>
-                            <Divider style={{ marginBottom: 5 }} />
-                            <Text style={{ fontSize: 15 }}>Acessar o repositório no GitHub</Text>
-                        </TouchableOpacity>
+                        <View style={{ margin: 20, alignItems: 'center' }}>
+                            <Text style={{ fontSize: 19 }}> Trabalho de Conclusão de Curso</Text>
+                            <Text> Universidade Tecnológica Federal do Paraná</Text>
+                            <Text> Bruno da Silva Braziel</Text>
+                            <Text> Cornélio Procópio</Text>
+                            <Text> 2020</Text>
+
+                        </View>
                     </View>
-                </View>
 
 
-                <View style={styles.settingItem}>
-
-                    <Text style={styles.settingTitle}>Sobre</Text>
-
-                    <Divider style={styles.divider} />
-                    <Text style={styles.textBox}>Versão 1.0</Text>
-
-                    <View style={{ margin: 20, alignItems: 'center' }}>
-                        <Text style={{ fontSize: 19 }}> Trabalho de Conclusão de Curso</Text>
-                        <Text> Universidade Tecnológica Federal do Paraná</Text>
-                        <Text> Bruno da Silva Braziel</Text>
-                        <Text> Cornélio Procópio</Text>
-                        <Text> 2020</Text>
-
-                    </View>
-                </View>
-
-
-                <Modal
-                    transparent={true}
-                    visible={this.state.showModal}
-                    onRequestClose={() => {
-                        this.setState({
-                            showModal: false
-                        })
-                    }}>
-                    <TouchableOpacity
-                        style={styles.modalDevicesOutter}
-                        onPressOut={() => {
+                    <Modal
+                        transparent={true}
+                        visible={this.state.showModal}
+                        onRequestClose={() => {
                             this.setState({
                                 showModal: false
                             })
                         }}>
-                        <View style={styles.modalDevicesInner}>
-                            <Text style={{ fontSize: 20, marginBottom: 20 }}>Dispositivos pareados</Text>
+                        <TouchableOpacity
+                            style={styles.modalDevicesOutter}
+                            onPressOut={() => {
+                                this.setState({
+                                    showModal: false
+                                })
+                            }}>
+                            <View style={styles.modalDevicesInner}>
+                                <Text style={{ fontSize: 20, marginBottom: 20 }}>Dispositivos pareados</Text>
 
-                            {this.state.devices.map(device => {
-                                return (
-                                    <TouchableOpacity
+                                {this.state.devices.map(device => {
+                                    return (
+                                        <TouchableOpacity
 
-                                        key={device.address}
-                                        onPress={() => {
-                                            this.connect(device)
-                                            this.setState({
-                                                showModal: false
-                                            })
-                                        }
-                                        }>
-                                        <Text style={{ margin: 10 }}>{device.name}</Text>
-                                        <Divider style={styles.divider} />
-                                    </TouchableOpacity>
-                                )
-                            })
-                            }
-                        </View>
-                    </TouchableOpacity>
-                </Modal>
+                                            key={device.address}
+                                            onPress={() => {
+                                                this.connect(device)
+                                                this.setState({
+                                                    showModal: false
+                                                })
+                                            }
+                                            }>
+                                            <Text style={{ margin: 10 }}>{device.name}</Text>
+                                            <Divider style={styles.divider} />
+                                        </TouchableOpacity>
+                                    )
+                                })
+                                }
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
 
 
-                <View style={styles.fillVoid}></View>
-                <View style={styles.groupsetButtons}>
-                    <TouchableOpacity
-                        style={styles.secButton}
-                        onPress={() => {
-                            this.props.navigation.navigate('Readings List')
-                        }}>
-                        <Text style={styles.sectextButtonRead}>Todas as Leituras</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.secButton}
-                        onPress={() => {
-                            this.uploadFile()
-                        }}>
-                        <Text style={styles.sectextButtonRead}>Importar Leitura</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.readButton}
-                        onPress={() => {
-                            this.goToPlot()
-                        }}>
-                        <Text style={styles.textButtonRead}>Nova Leitura</Text>
-                    </TouchableOpacity>
+                    <View style={styles.fillVoid}></View>
+                    <View style={styles.groupsetButtons}>
+                        <TouchableOpacity
+                            style={styles.secButton}
+                            onPress={() => {
+                                this.props.navigation.navigate('Readings List')
+                            }}>
+                            <Text style={styles.sectextButtonRead}>Todas as Leituras</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.secButton}
+                            onPress={() => {
+                                this.uploadFile()
+                            }}>
+                            <Text style={styles.sectextButtonRead}>Importar Leitura</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.readButton}
+                            onPress={() => {
+                                this.goToPlot()
+                            }}>
+                            <Text style={styles.textButtonRead}>Nova Leitura</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
+            </ScrollView>
         )
     }
 }

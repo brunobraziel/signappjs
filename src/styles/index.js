@@ -234,7 +234,8 @@ export default styles = StyleSheet.create({
         margin: 10
     },
     groupsetButtons: {
-        flexDirection: 'column'
+        flexDirection: 'column',
+        alignItems: 'center'
     },
     listContainer: {
         flex: 1,
